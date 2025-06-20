@@ -14,31 +14,6 @@ Este proyecto es una aplicación web desarrollada con **Python (Flask)** y **Ora
 
 ---
 
-## 📁 Estructura del proyecto
-
-proyecto_morales/
-├── app/
-│ ├── init.py
-│ ├── db.py
-│ ├── models.py
-│ ├── views/
-│ ├── personas_morales_view.py
-│ ├── representantes_legales_view.py
-├── templates/
-│ ├── base.html
-│ ├── personas_morales/
-│ ├── representantes_legales/
-├── static/
-├── config/
-│ └── config.yml
-├── .env
-├── run.py
-├── requirements.txt
-
-
-
----
-
 ## ⚙️ Tecnologías utilizadas
 
 - Python 3.x
