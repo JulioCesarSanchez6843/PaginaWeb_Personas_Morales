@@ -1,0 +1,18 @@
+<!-- templates/personas_morales_opciones.html -->
+{% extends 'layout.html' %}
+
+{% block title %}Personas Morales{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Gestión de Personas Morales</h2>
+  <div class="d-grid gap-3 col-6 mx-auto">
+    <a href="{{ url_for('personas_morales_view.listado') }}" class="btn btn-outline-primary btn-lg">
+      Consultar Personas Morales
+    </a>
+    <a href="{{ url_for('personas_morales_view.nueva_persona') }}" class="btn btn-outline-success btn-lg">
+      Crear Nueva Persona Moral
+    </a>
+  </div>
+</div>
+{% endblock %}

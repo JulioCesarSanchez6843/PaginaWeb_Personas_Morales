@@ -1,0 +1,8 @@
+# app/views/__init__.py
+
+from .inicio_view import inicio_view
+from .personas_morales_view import personas_morales_view
+from .representantes_legales_view import representantes_legales_view
+from .actividades_economicas_view import actividades_economicas_view
+from .moral_actividades_view import moral_actividades_view
+from .documento_persona_moral_view import documentos_view

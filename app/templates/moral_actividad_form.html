@@ -1,0 +1,48 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ accion }} Asignación de Actividad{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ accion }} Asignación de Actividad</h2>
+
+  <form method="POST">
+    <div class="mb-3">
+      <label for="id_moral" class="form-label">Persona Moral</label>
+      <select name="id_moral"
+              id="id_moral"
+              class="form-select"
+              required>
+        <option value="">Seleccione...</option>
+        {% for moral in personas_morales %}
+          <option value="{{ moral[0] }}"
+                  {% if asignacion and asignacion.id_moral == moral[0] %}selected{% endif %}>
+            {{ moral[1] }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="id_actividad" class="form-label">Actividad Económica</label>
+      <select name="id_actividad"
+              id="id_actividad"
+              class="form-select"
+              required>
+        <option value="">Seleccione...</option>
+        {% for act in actividades %}
+          <option value="{{ act[0] }}"
+                  {% if asignacion and asignacion.id_actividad == act[0] %}selected{% endif %}>
+            {{ act[1] }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="d-flex justify-content-start">
+      <button type="submit" class="btn btn-success me-2">{{ accion }}</button>
+      <a href="{{ url_for('moral_actividades_view.listado') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

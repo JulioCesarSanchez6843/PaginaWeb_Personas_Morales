@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block title %}Documentos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Gestión de Documentos de Personas Morales</h2>
+  <div class="d-grid gap-3 col-6 mx-auto">
+    <a href="{{ url_for('documentos_view.listar_documentos') }}" class="btn btn-outline-primary btn-lg">
+      Consultar Documentos
+    </a>
+    <a href="{{ url_for('documentos_view.nuevo_documento') }}" class="btn btn-outline-success btn-lg">
+      Subir Nuevo Documento
+    </a>
+  </div>
+</div>
+{% endblock %}

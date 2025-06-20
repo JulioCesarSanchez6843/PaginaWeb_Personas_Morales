@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+
+{% block title %}Documentos de Personas Morales{% endblock %}
+
+{% block content %}
+<h2>Documentos de Personas Morales</h2>
+
+<form method="get" action="{{ url_for('documentos_view.listar_documentos') }}" class="mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <input type="text" name="nombre_moral" class="form-control" placeholder="Nombre Persona Moral" value="{{ filtros.nombre_moral or '' }}">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="nombre_archivo" class="form-control" placeholder="Nombre Archivo" value="{{ filtros.nombre_archivo or '' }}">
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="tipo_documento" class="form-control" placeholder="Tipo Documento" value="{{ filtros.tipo_documento or '' }}">
+        </div>
+        <div class="col-md-2">
+            <input type="date" name="fecha_subida" class="form-control" value="{{ filtros.fecha_subida or '' }}">
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            <a href="{{ url_for('documentos_view.listar_documentos') }}" class="btn btn-secondary">Limpiar</a>
+        </div>
+    </div>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID Documento</th>
+            <th>Nombre Persona Moral</th>
+            <th>Nombre Archivo</th>
+            <th>Tipo Documento</th>
+            <th>Fecha de Subida</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for doc in documentos %}
+        <tr>
+            <td>{{ doc.id_documento }}</td>
+            <td>{{ doc.nombre_moral }}</td>
+            <td>{{ doc.nombre_archivo }}</td>
+            <td>{{ doc.tipo_documento or '' }}</td>
+            <td>{{ doc.fecha_subida.strftime('%Y-%m-%d') if doc.fecha_subida else '' }}</td>
+            <td>
+                <a href="{{ url_for('documentos_view.descargar_documento', id=doc.id_documento) }}" class="btn btn-sm btn-info">Descargar</a>
+                <a href="{{ url_for('documentos_view.eliminar_documento', id=doc.id_documento) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Eliminar este documento?')">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="mt-3 d-flex justify-content-start">
+    <a href="{{ url_for('documentos_view.nuevo_documento') }}" class="btn btn-primary">Subir nuevo documento</a>
+</div>
+{% endblock %}

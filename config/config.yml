@@ -1,0 +1,6 @@
+oracle:
+  user: moral
+  password: Oracle_1
+  host: 132.226.145.122
+  port: 1521
+  service_name: FREEPDB1

@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block title %}Actividades Asignadas{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Gestión de Asignaciones de Actividades Económicas</h2>
+  <div class="d-grid gap-3 col-6 mx-auto">
+    <a href="{{ url_for('moral_actividades_view.listado') }}" class="btn btn-outline-primary btn-lg">
+      Consultar Asignaciones
+    </a>
+    <a href="{{ url_for('moral_actividades_view.nueva_asignacion') }}" class="btn btn-outline-success btn-lg">
+      Crear Nueva Asignación
+    </a>
+  </div>
+</div>
+{% endblock %}

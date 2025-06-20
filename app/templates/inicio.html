@@ -1,0 +1,44 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row gy-4">
+
+    <div class="col-md-6">
+      <a href="{{ url_for('personas_morales_view.opciones') }}"
+         class="btn btn-primary btn-lg w-100 py-5">
+        Personas Morales
+      </a>
+    </div>
+
+    <div class="col-md-6">
+      <a href="{{ url_for('representantes_legales_view.opciones') }}"
+         class="btn btn-secondary btn-lg w-100 py-5">
+        Representantes Legales
+      </a>
+    </div>
+
+    <div class="col-md-6">
+      <a href="{{ url_for('actividades_economicas_view.opciones') }}"
+         class="btn btn-success btn-lg w-100 py-5">
+        Actividades Económicas
+      </a>
+    </div>
+
+    <div class="col-md-6">
+      <a href="{{ url_for('moral_actividades_view.opciones') }}"
+         class="btn btn-warning btn-lg w-100 py-5">
+        Asignaciones Moral‑Actividades
+      </a>
+    </div>
+
+    <div class="col-12">
+      <a href="{{ url_for('documentos_view.opciones') }}"
+         class="btn btn-info btn-lg w-100 py-5">
+        Documentos
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

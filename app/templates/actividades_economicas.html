@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+
+{% block title %}Actividades Económicas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Actividades Económicas</h2>
+
+  <!-- Filtro de búsqueda -->
+  <form method="get" class="row g-2 mb-4">
+    <div class="col-md-6">
+      <input type="text" name="nombre" class="form-control" placeholder="Buscar por nombre"
+             value="{{ filtro_nombre or '' }}">
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary">Buscar</button>
+      <a href="{{ url_for('actividades_economicas_view.listado') }}" class="btn btn-outline-secondary">Limpiar</a>
+    </div>
+  </form>
+
+  {% if actividades %}
+    <table class="table table-striped table-bordered">
+      <thead class="table-dark">
+        <tr>
+          <th>ID Actividad</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for actividad in actividades %}
+        <tr>
+          <td>{{ actividad.id_actividad }}</td>
+          <td>{{ actividad.nombre }}</td>
+          <td>{{ actividad.descripcion }}</td>
+          <td>
+            <a href="{{ url_for('actividades_economicas_view.editar_actividad', id=actividad.id_actividad) }}"
+               class="btn btn-sm btn-warning">Editar</a>
+            <a href="{{ url_for('actividades_economicas_view.eliminar_actividad', id=actividad.id_actividad) }}"
+               class="btn btn-sm btn-danger"
+               onclick="return confirm('¿Eliminar esta actividad?');">
+              Eliminar
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-info">No hay actividades registradas.</div>
+  {% endif %}
+
+  <!-- Botón para agregar nueva -->
+  <a href="{{ url_for('actividades_economicas_view.nueva_actividad') }}"
+     class="btn btn-primary mt-3">
+    Agregar nueva actividad
+  </a>
+</div>
+{% endblock %}

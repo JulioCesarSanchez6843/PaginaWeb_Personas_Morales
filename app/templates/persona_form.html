@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ accion }} Persona Moral</h2>
+
+  <!-- ⚠️ Mostrar mensajes flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="post" novalidate>
+    <div class="mb-3">
+      <label for="razon_social" class="form-label">Razón Social <span class="text-danger">*</span></label>
+      <input type="text" class="form-control" id="razon_social" name="razon_social"
+             required value="{{ persona.razon_social or '' }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="rfc" class="form-label">RFC <span class="text-danger">*</span></label>
+      <input type="text" class="form-control" id="rfc" name="rfc"
+             required value="{{ persona.rfc or '' }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="fecha_constitucion" class="form-label">Fecha Constitución</label>
+      <input type="date" class="form-control" id="fecha_constitucion" name="fecha_constitucion"
+             value="{{ persona.fecha_constitucion or '' }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="domicilio_fiscal" class="form-label">Domicilio Fiscal</label>
+      <input type="text" class="form-control" id="domicilio_fiscal" name="domicilio_fiscal"
+             value="{{ persona.domicilio_fiscal or '' }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="telefono" class="form-label">Teléfono <span class="text-danger">*</span></label>
+      <input type="tel" class="form-control" id="telefono" name="telefono"
+             required value="{{ persona.telefono or '' }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+      <input type="email" class="form-control" id="email" name="email"
+             required value="{{ persona.email or '' }}">
+    </div>
+
+    <div class="mt-4">
+      <button type="submit" class="btn btn-success">{{ accion }}</button>
+      <a href="{{ url_for('personas_morales_view.listado') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

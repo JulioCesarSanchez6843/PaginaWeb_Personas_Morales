@@ -1,0 +1,75 @@
+{# templates/moral_actividades.html #}
+{% extends 'layout.html' %}
+
+{% block title %}Asignaciones de Actividades a Personas Morales{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Asignaciones de Actividades a Personas Morales</h2>
+
+  {# --- Formulario de filtros por texto --- #}
+  <form method="get" action="{{ url_for('moral_actividades_view.listado') }}" class="row g-2 mb-4">
+    <div class="col-md-6">
+      <input type="text"
+             name="nombre_moral"
+             class="form-control"
+             placeholder="Filtrar por Razón Social"
+             value="{{ filtros.nombre_moral }}">
+    </div>
+    <div class="col-md-6">
+      <input type="text"
+             name="nombre_actividad"
+             class="form-control"
+             placeholder="Filtrar por Nombre de Actividad"
+             value="{{ filtros.nombre_actividad }}">
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary">Buscar</button>
+      <a href="{{ url_for('moral_actividades_view.listado') }}" class="btn btn-outline-secondary">Limpiar</a>
+    </div>
+  </form>
+
+  {# --- Tabla de resultados --- #}
+  {% if asignaciones %}
+    <table class="table table-striped table-bordered">
+      <thead class="table-dark">
+        <tr>
+          <th>Razón Social</th>
+          <th>Actividad Económica</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in asignaciones %}
+          <tr>
+            <td>{{ a.nombre_moral }}</td>
+            <td>{{ a.nombre_actividad }}</td>
+            <td>{{ a.descripcion }}</td>
+            <td>
+              <a href="{{ url_for('moral_actividades_view.editar_asignacion',
+                                  id_moral=a.id_moral,
+                                  id_actividad=a.id_actividad) }}"
+                 class="btn btn-sm btn-warning">Editar</a>
+              <form method="post"
+                    action="{{ url_for('moral_actividades_view.eliminar_asignacion',
+                                       id_moral=a.id_moral,
+                                       id_actividad=a.id_actividad) }}"
+                    style="display:inline;"
+                    onsubmit="return confirm('¿Eliminar esta asignación?');">
+                <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="alert alert-info">No hay registros que coincidan con los filtros.</div>
+  {% endif %}
+
+  <a href="{{ url_for('moral_actividades_view.nueva_asignacion') }}" class="btn btn-primary mt-3">
+    + Nueva Asignación
+  </a>
+</div>
+{% endblock %}

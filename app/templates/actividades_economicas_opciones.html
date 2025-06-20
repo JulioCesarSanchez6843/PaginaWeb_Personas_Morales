@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block title %}Actividades Económicas{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Gestión de Actividades Económicas</h2>
+  <div class="d-grid gap-3 col-6 mx-auto">
+    <a href="{{ url_for('actividades_economicas_view.listado') }}" class="btn btn-outline-primary btn-lg">
+      Consultar Actividades
+    </a>
+    <a href="{{ url_for('actividades_economicas_view.nueva_actividad') }}" class="btn btn-outline-success btn-lg">
+      Crear Nueva Actividad
+    </a>
+  </div>
+</div>
+{% endblock %}

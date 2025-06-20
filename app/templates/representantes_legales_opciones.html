@@ -1,0 +1,18 @@
+<!-- templates/representantes_legales_opciones.html -->
+{% extends 'layout.html' %}
+
+{% block title %}Representantes Legales{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Gestión de Representantes Legales</h2>
+  <div class="d-grid gap-3 col-6 mx-auto">
+    <a href="{{ url_for('representantes_legales_view.listar_representantes') }}" class="btn btn-outline-primary btn-lg">
+      Consultar Representantes
+    </a>
+    <a href="{{ url_for('representantes_legales_view.nuevo_representante') }}" class="btn btn-outline-success btn-lg">
+      Crear Nuevo Representante
+    </a>
+  </div>
+</div>
+{% endblock %}
