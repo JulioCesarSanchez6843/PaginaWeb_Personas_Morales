@@ -94,19 +94,30 @@ def listar_representantes():
     }
 
     # 2️⃣ Construir WHERE dinámico
-    where = ["r.ESTADO = 'ACTIVO'"]
+    where = []
     params = {}
+
     if filtros['id_moral']:
         where.append("r.ID_MORAL = :id_moral")
         params['id_moral'] = int(filtros['id_moral'])
+
     if filtros['fecha_nacimiento']:
         where.append("TO_CHAR(r.FECHA_NACIMIENTO,'YYYY-MM-DD') = :fecha_nacimiento")
         params['fecha_nacimiento'] = filtros['fecha_nacimiento']
-    for campo in ('nombre','apellido_paterno','apellido_materno','curp','rfc','telefono','email','estado'):
+
+# Campos que usan LIKE (insensible a mayúsculas)
+    for campo in ('nombre','apellido_paterno','apellido_materno','curp','rfc','telefono','email'):
         val = filtros[campo]
         if val:
             where.append(f"UPPER(r.{campo.upper()}) LIKE :{campo}")
             params[campo] = f"%{val.upper()}%"
+
+# Campo estado con comparación exacta (si está filtro, si no, por defecto ACTIVO)
+    if filtros['estado']:
+        where.append("UPPER(r.ESTADO) = :estado")
+        params['estado'] = filtros['estado'].upper()
+    else:
+        where.append("r.ESTADO = 'ACTIVO'")
 
     sql = f"""
         SELECT r.ID_REPRESENTANTE,

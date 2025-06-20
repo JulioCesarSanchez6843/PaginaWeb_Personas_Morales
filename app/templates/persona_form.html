@@ -4,18 +4,6 @@
 <div class="container mt-4">
   <h2>{{ accion }} Persona Moral</h2>
 
-  <!-- ⚠️ Mostrar mensajes flash -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
   <form method="post" novalidate>
     <div class="mb-3">
       <label for="razon_social" class="form-label">Razón Social <span class="text-danger">*</span></label>
@@ -52,6 +40,16 @@
       <input type="email" class="form-control" id="email" name="email"
              required value="{{ persona.email or '' }}">
     </div>
+
+    {% if persona and persona.estado %}
+    <div class="mb-3">
+      <label for="estado" class="form-label">Estado</label>
+      <select class="form-select" id="estado" name="estado" required>
+        <option value="ACTIVO" {% if persona.estado == 'ACTIVO' %}selected{% endif %}>Activo</option>
+        <option value="INACTIVO" {% if persona.estado == 'INACTIVO' %}selected{% endif %}>Inactivo</option>
+      </select>
+    </div>
+    {% endif %}
 
     <div class="mt-4">
       <button type="submit" class="btn btn-success">{{ accion }}</button>

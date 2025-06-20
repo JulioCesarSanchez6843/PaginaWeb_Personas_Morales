@@ -41,8 +41,8 @@
     </div>
     <div class="col-md-2">
       <select name="estado" class="form-select">
-        <option value="">Todos</option>
-        <option value="ACTIVO"   {% if filtros.estado=='ACTIVO'   %}selected{% endif %}>Activo</option>
+        <option value="" {% if filtros.estado == '' %}selected{% endif %}>Todos</option>
+        <option value="ACTIVO" {% if filtros.estado=='ACTIVO' %}selected{% endif %}>Activo</option>
         <option value="INACTIVO" {% if filtros.estado=='INACTIVO' %}selected{% endif %}>Inactivo</option>
       </select>
     </div>
@@ -83,11 +83,20 @@
           <td>
             <a href="{{ url_for('personas_morales_view.editar_persona', id=p.id_moral) }}"
                class="btn btn-sm btn-warning">Editar</a>
-            <a href="{{ url_for('personas_morales_view.eliminar_persona', id=p.id_moral) }}"
-               class="btn btn-sm btn-danger"
-               onclick="return confirm('¿Eliminar esta persona moral?');">
-              Eliminar
-            </a>
+
+            {% if p.estado == 'ACTIVO' %}
+              <a href="{{ url_for('personas_morales_view.eliminar_persona', id=p.id_moral) }}"
+                 class="btn btn-sm btn-danger"
+                 onclick="return confirm('¿Eliminar esta persona moral?');">
+                Desactivar
+              </a>
+            {% else %}
+              <a href="{{ url_for('personas_morales_view.reactivar_persona', id=p.id_moral) }}"
+                 class="btn btn-sm btn-success"
+                 onclick="return confirm('¿Reactivar esta persona moral?');">
+                Reactivar
+              </a>
+            {% endif %}
           </td>
         </tr>
       {% endfor %}

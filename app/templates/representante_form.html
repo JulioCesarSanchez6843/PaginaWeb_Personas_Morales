@@ -18,7 +18,7 @@
 
 <form method="POST"
       action="{% if representante and representante.get('id_representante') %}{{ url_for('representantes_legales_view.editar_representante', id=representante['id_representante']) }}{% else %}{{ url_for('representantes_legales_view.nuevo_representante') }}{% endif %}">
-    
+
     {% if representante and representante.get('id_representante') %}
     <input type="hidden" name="id_representante" value="{{ representante['id_representante'] }}">
     {% endif %}
@@ -75,13 +75,7 @@
         <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" value="{{ representante['fecha_nacimiento'] if representante else '' }}">
     </div>
 
-    <div class="form-group">
-        <label for="estado">Estado</label>
-        <select id="estado" name="estado" class="form-control" required>
-            <option value="ACTIVO" {% if representante and representante['estado'] == 'ACTIVO' %}selected{% endif %}>Activo</option>
-            <option value="INACTIVO" {% if representante and representante['estado'] == 'INACTIVO' %}selected{% endif %}>Inactivo</option>
-        </select>
-    </div>
+    <!-- Aquí ELIMINAMOS el campo Estado -->
 
     <button type="submit" class="btn btn-primary">{{ 'Actualizar' if representante else 'Guardar' }}</button>
     <a href="{{ url_for('representantes_legales_view.listar_representantes') }}" class="btn btn-secondary">Cancelar</a>

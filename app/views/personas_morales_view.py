@@ -27,11 +27,11 @@ def listado():
         'domicilio_fiscal':   request.args.get('domicilio_fiscal', '').strip(),
         'telefono':           request.args.get('telefono', '').strip(),
         'email':              request.args.get('email', '').strip(),
-        'estado':             request.args.get('estado', '').strip()
+        'estado':             request.args.get('estado', '').strip().upper()  # Ponemos upper para comparar
     }
 
     # Construir la consulta dinámica
-    where_clauses = ["estado = 'ACTIVO'"]
+    where_clauses = []
     params = {}
 
     if filtros['razon_social']:
@@ -52,9 +52,15 @@ def listado():
     if filtros['email']:
         where_clauses.append("UPPER(email) LIKE :em")
         params['em'] = f"%{filtros['email'].upper()}%"
-    if filtros['estado']:
+    if filtros['estado'] and filtros['estado'] != 'TODOS':
         where_clauses.append("estado = :est")
         params['est'] = filtros['estado']
+
+    # Si no hay condiciones, consultamos todo (todos los registros)
+    # Pero si hay condiciones, hacemos WHERE con ellas
+    where_sql = ''
+    if where_clauses:
+        where_sql = "WHERE " + " AND ".join(where_clauses)
 
     sql = f"""
         SELECT id_moral,
@@ -66,7 +72,7 @@ def listado():
                email,
                estado
           FROM personas_morales
-         WHERE {' AND '.join(where_clauses)}
+         {where_sql}
       ORDER BY id_moral
     """
 
@@ -97,7 +103,6 @@ def listado():
         filtros=filtros
     )
 
-
 # 🟠 Eliminar (baja lógica)
 @personas_morales_view.route('/eliminar/<int:id>', methods=['GET'])
 def eliminar_persona(id):
@@ -126,15 +131,39 @@ def nueva_persona():
         email         = data.get('email', '').strip()
         fc            = data.get('fecha_constitucion', '').strip()
 
-        # Validación de campos obligatorios
-        if not razon_social or not rfc_nuevo:
-            flash('Razón Social y RFC son obligatorios.', 'danger')
+        errores = []
+
+        # Validar campos obligatorios
+        campos_obligatorios = {
+            'Razón Social': razon_social,
+            'RFC': rfc_nuevo,
+            'Domicilio Fiscal': domicilio,
+            'Teléfono': telefono,
+            'Email': email,
+            'Fecha de Constitución': fc
+        }
+
+        for campo, valor in campos_obligatorios.items():
+            if not valor:
+                errores.append(f'El campo {campo} es obligatorio.')
+
+        # Validar formato de fecha
+        from datetime import datetime
+        if fc:
+            try:
+                datetime.strptime(fc, '%Y-%m-%d')
+            except ValueError:
+                errores.append('La Fecha de Constitución debe tener formato YYYY-MM-DD.')
+
+        if errores:
+            for error in errores:
+                flash(error, 'danger')
             return render_template('persona_form.html', accion='Crear', persona=data)
 
         conn = get_connection()
         cur = conn.cursor()
 
-        # Validar unicidad RFC, teléfono y email
+        # Validar unicidad RFC, teléfono y email (solo activos)
         cur.execute("""
             SELECT COUNT(*) FROM personas_morales 
              WHERE UPPER(rfc) = :rfc AND estado='ACTIVO'
@@ -173,23 +202,31 @@ def nueva_persona():
             """, {
                 'rs': razon_social,
                 'rfc': rfc_nuevo,
-                'fc': fc or None,
-                'df': domicilio or None,
-                'tel': telefono or None,
-                'em': email or None
+                'fc': fc,
+                'df': domicilio,
+                'tel': telefono,
+                'em': email
             })
             conn.commit()
             flash('Persona moral creada correctamente.', 'success')
             return redirect(url_for('personas_morales_view.listado'))
         except cx_Oracle.IntegrityError as e:
+            error_obj, = e.args
+            if 'ORA-00001' in error_obj.message:
+                flash(f'Ya existe otra persona moral con el RFC "{rfc_nuevo}".', 'danger')
+            else:
+                flash(f'Error de integridad: {error_obj.message}', 'danger')
+            conn.rollback()
+            return render_template('persona_form.html', accion='Crear', persona=data)
+        except Exception as e:
             flash(f'Error inesperado: {e}', 'danger')
             conn.rollback()
+            return render_template('persona_form.html', accion='Crear', persona=data)
         finally:
             cur.close()
             conn.close()
 
     return render_template('persona_form.html', accion='Crear', persona={})
-
 
 # 3️⃣ Editar persona moral existente
 @personas_morales_view.route('/editar/<int:id>', methods=['GET', 'POST'])
@@ -205,11 +242,38 @@ def editar_persona(id):
         telefono     = data.get('telefono', '').strip()
         email        = data.get('email', '').strip()
         fc           = data.get('fecha_constitucion', '').strip()
+        estado       = data.get('estado', '').strip().upper() if data.get('estado') else None
 
-        # Validación de campos obligatorios
-        if not razon_social or not rfc_editado:
-            flash('Razón Social y RFC son obligatorios.', 'danger')
-            cur.close(); conn.close()
+        errores = []
+
+        # Validar campos obligatorios
+        campos_obligatorios = {
+            'Razón Social': razon_social,
+            'RFC': rfc_editado,
+            'Domicilio Fiscal': domicilio,
+            'Teléfono': telefono,
+            'Email': email,
+            'Fecha de Constitución': fc,
+            'Estado': estado
+        }
+
+        for campo, valor in campos_obligatorios.items():
+            if not valor:
+                errores.append(f'El campo {campo} es obligatorio.')
+
+        # Validar formato de fecha
+        from datetime import datetime
+        if fc:
+            try:
+                datetime.strptime(fc, '%Y-%m-%d')
+            except ValueError:
+                errores.append('La Fecha de Constitución debe tener formato YYYY-MM-DD.')
+
+        if errores:
+            for error in errores:
+                flash(error, 'danger')
+            cur.close()
+            conn.close()
             return render_template('persona_form.html', accion='Editar', persona=data)
 
         # Validar unicidad con exclusión del propio registro
@@ -218,62 +282,93 @@ def editar_persona(id):
              WHERE UPPER(rfc)=:rfc AND id_moral!=:id AND estado='ACTIVO'
         """, {'rfc': rfc_editado, 'id': id})
         if cur.fetchone()[0] > 0:
-            flash(f'El RFC "{rfc_editado}" ya existe en otro registro.', 'danger')
-            cur.close(); conn.close()
+            flash(f'El RFC "{rfc_editado}" ya existe en otro registro activo.', 'danger')
+            cur.close()
+            conn.close()
             return render_template('persona_form.html', accion='Editar', persona=data)
 
+        # Validar que si se quiere poner estado ACTIVO, no exista otra persona activa con mismo RFC
+        if estado == 'ACTIVO':
+            cur.execute("""
+                SELECT COUNT(*) FROM personas_morales
+                 WHERE UPPER(rfc)=:rfc AND id_moral!=:id AND estado='ACTIVO'
+            """, {'rfc': rfc_editado, 'id': id})
+            if cur.fetchone()[0] > 0:
+                flash(f'Ya existe otra persona moral activa con el RFC "{rfc_editado}". No puede activar esta.', 'danger')
+                cur.close()
+                conn.close()
+                return render_template('persona_form.html', accion='Editar', persona=data)
+
+        # Validar teléfono único
         cur.execute("""
             SELECT COUNT(*) FROM personas_morales
              WHERE telefono=:tel AND id_moral!=:id AND estado='ACTIVO'
         """, {'tel': telefono, 'id': id})
         if telefono and cur.fetchone()[0] > 0:
-            flash(f'El teléfono "{telefono}" ya existe en otro registro.', 'danger')
-            cur.close(); conn.close()
+            flash(f'El teléfono "{telefono}" ya existe en otro registro activo.', 'danger')
+            cur.close()
+            conn.close()
             return render_template('persona_form.html', accion='Editar', persona=data)
 
+        # Validar email único
         cur.execute("""
             SELECT COUNT(*) FROM personas_morales
              WHERE LOWER(email)=:em AND id_moral!=:id AND estado='ACTIVO'
         """, {'em': email.lower(), 'id': id})
         if email and cur.fetchone()[0] > 0:
-            flash(f'El email "{email}" ya existe en otro registro.', 'danger')
-            cur.close(); conn.close()
+            flash(f'El email "{email}" ya existe en otro registro activo.', 'danger')
+            cur.close()
+            conn.close()
             return render_template('persona_form.html', accion='Editar', persona=data)
 
         try:
             cur.execute("""
                 UPDATE personas_morales
-                   SET razon_social    = :rs,
-                       rfc             = :rfc,
+                   SET razon_social      = :rs,
+                       rfc               = :rfc,
                        fecha_constitucion = TO_DATE(:fc,'YYYY-MM-DD'),
-                       domicilio_fiscal   = :df,
-                       telefono           = :tel,
-                       email              = :em
+                       domicilio_fiscal  = :df,
+                       telefono          = :tel,
+                       email             = :em,
+                       estado            = :est
                  WHERE id_moral = :id
             """, {
                 'rs': razon_social,
                 'rfc': rfc_editado,
-                'fc': fc or None,
-                'df': domicilio or None,
-                'tel': telefono or None,
-                'em': email or None,
+                'fc': fc,
+                'df': domicilio,
+                'tel': telefono,
+                'em': email,
+                'est': estado,
                 'id': id
             })
             conn.commit()
             flash('Persona moral actualizada correctamente.', 'success')
-            return redirect(url_for('personas_morales_view.listado'))
-        except cx_Oracle.IntegrityError as e:
-            flash(f'Error inesperado: {e}', 'danger')
-            conn.rollback()
-        finally:
             cur.close()
             conn.close()
+            return redirect(url_for('personas_morales_view.listado'))
+        except cx_Oracle.IntegrityError as e:
+            error_obj, = e.args
+            if 'ORA-00001' in error_obj.message:
+                flash(f'Ya existe otra persona moral con el RFC "{rfc_editado}".', 'danger')
+            else:
+                flash(f'Error de integridad: {error_obj.message}', 'danger')
+            conn.rollback()
+            cur.close()
+            conn.close()
+            return render_template('persona_form.html', accion='Editar', persona=data)
+        except Exception as e:
+            flash(f'Error inesperado: {e}', 'danger')
+            conn.rollback()
+            cur.close()
+            conn.close()
+            return render_template('persona_form.html', accion='Editar', persona=data)
 
     # GET: cargar datos existentes
     cur.execute("""
         SELECT razon_social, rfc,
                TO_CHAR(fecha_constitucion,'YYYY-MM-DD'),
-               domicilio_fiscal, telefono, email
+               domicilio_fiscal, telefono, email, estado
           FROM personas_morales
          WHERE id_moral = :id
     """, {'id': id})
@@ -287,7 +382,8 @@ def editar_persona(id):
         'fecha_constitucion': row[2],
         'domicilio_fiscal':   row[3],
         'telefono':           row[4],
-        'email':              row[5]
+        'email':              row[5],
+        'estado':             row[6]
     }
 
     return render_template(
@@ -295,3 +391,18 @@ def editar_persona(id):
         accion='Editar',
         persona=persona
     )
+
+@personas_morales_view.route('/reactivar/<int:id>', methods=['GET'])
+def reactivar_persona(id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE personas_morales
+           SET estado = 'ACTIVO'
+         WHERE id_moral = :id
+    """, {'id': id})
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('Persona moral reactivada correctamente.', 'success')
+    return redirect(url_for('personas_morales_view.listado'))
