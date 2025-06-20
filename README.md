@@ -25,10 +25,3 @@ Este proyecto es una aplicación web desarrollada con **Python (Flask)** y **Ora
 
 ---
 
-## 🔧 Instalación y uso
-
-1. Clona el repositorio:
-
-```bash
-git clone https://github.com/JulioCesarSanchez6843/PaginaWeb_Personas_Morales.git
-cd PaginaWeb_Personas_Morales
