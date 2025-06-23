@@ -1,46 +1,52 @@
 {% extends 'layout.html' %}
 
+{% block title %}
+  {{ accion }} Actividad Económica
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>{{ 'Editar Documento' if documento else 'Subir Documento' }}</h2>
+<div class="container mt-5">
 
-    <form method="POST" enctype="multipart/form-data">
-        <!-- Persona Moral -->
-        <div class="mb-3">
-            <label for="id_moral" class="form-label">Persona Moral</label>
-            <select name="id_moral" id="id_moral" class="form-select" required>
-                <option value="">-- Seleccione --</option>
-                {% for id_moral, razon_social in personas_morales %}
-                    <option value="{{ id_moral }}"
-                        {% if documento and documento.id_moral == id_moral %}selected{% endif %}>
-                        {{ razon_social }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
+  <h2 class="mb-4">{{ accion }} Actividad Económica</h2>
 
-        <!-- Archivo (solo si es nuevo) -->
-        {% if not documento %}
-        <div class="mb-3">
-            <label for="archivo" class="form-label">Archivo</label>
-            <input type="file" name="archivo" id="archivo" class="form-control" required>
+  <!-- Mostrar mensajes flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="post">
+    <div class="mb-3">
+      <label for="nombre" class="form-label">Nombre</label>
+      <input type="text" name="nombre" class="form-control"
+             value="{{ actividad.get('nombre', '') }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="descripcion" class="form-label">Descripción</label>
+      <textarea name="descripcion" class="form-control" rows="4">{{ actividad.get('descripcion', '') }}</textarea>
+    </div>
+
+    <div class="d-flex gap-3">
+      <button type="submit" class="btn btn-success">
+        {% if accion == 'Editar' %}
+          <i class="bi bi-pencil-square"></i> Actualizar
         {% else %}
-        <p><strong>Archivo actual:</strong> {{ documento.nombre_archivo }}</p>
+          <i class="bi bi-plus-circle"></i> Crear
         {% endif %}
+      </button>
 
-        <!-- Tipo de documento -->
-        <div class="mb-3">
-            <label for="tipo_documento" class="form-label">Tipo de Documento</label>
-            <input type="text" name="tipo_documento" id="tipo_documento" class="form-control"
-                   value="{{ documento.tipo_documento if documento else '' }}">
-        </div>
+      <a href="{{ url_for('actividades_economicas_view.listado') }}" class="btn btn-secondary">
+        Cancelar
+      </a>
+    </div>
+  </form>
 
-        <!-- Botones -->
-        <button type="submit" class="btn btn-primary">
-            {{ 'Actualizar' if documento else 'Subir' }}
-        </button>
-        <a href="{{ url_for('documentos_view.listar_documentos') }}" class="btn btn-secondary">Cancelar</a>
-    </form>
 </div>
 {% endblock %}

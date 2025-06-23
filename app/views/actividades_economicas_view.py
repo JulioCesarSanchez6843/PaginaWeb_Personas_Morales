@@ -10,15 +10,15 @@ actividades_economicas_view = Blueprint(
 MAX_LENGTH_NOMBRE = 150
 MAX_LENGTH_DESCRIPCION = 500
 
-# Página con opciones: consultar o crear
+# Página de opciones
 @actividades_economicas_view.route('/opciones', methods=['GET'])
 def opciones():
     return render_template('actividades_economicas_opciones.html')
 
-# Listar actividades económicas (endpoint: listado)
+# Listar actividades
 @actividades_economicas_view.route('/', methods=['GET'])
 def listado():
-    nombre = request.args.get('nombre', '').strip().upper()
+    nombre = request.args.get('nombre', '').strip()
 
     conn = get_connection()
     cur = conn.cursor()
@@ -32,7 +32,7 @@ def listado():
 
     if nombre:
         sql += " AND UPPER(nombre) LIKE :nombre"
-        params['nombre'] = f"%{nombre}%"
+        params['nombre'] = f"%{nombre.upper()}%"
 
     sql += " ORDER BY id_actividad"
 
@@ -52,17 +52,18 @@ def listado():
         filtro_nombre=nombre
     )
 
-# Crear actividad económica (endpoint: nueva_actividad)
+# Crear nueva actividad
 @actividades_economicas_view.route('/nueva', methods=['GET', 'POST'])
 def nueva_actividad():
     if request.method == 'POST':
         nombre = request.form.get('nombre', '').strip()
         descripcion = request.form.get('descripcion', '').strip()
 
-        # Validaciones de campos obligatorios y longitud
+        # Validaciones
         if not nombre:
             flash('El nombre es obligatorio.', 'danger')
             return render_template('actividad_form.html', accion='Crear', actividad=request.form)
+
         if len(nombre) > MAX_LENGTH_NOMBRE:
             flash(f'El nombre no puede tener más de {MAX_LENGTH_NOMBRE} caracteres.', 'danger')
             return render_template('actividad_form.html', accion='Crear', actividad=request.form)
@@ -70,6 +71,7 @@ def nueva_actividad():
         if not descripcion:
             flash('La descripción es obligatoria.', 'danger')
             return render_template('actividad_form.html', accion='Crear', actividad=request.form)
+
         if len(descripcion) > MAX_LENGTH_DESCRIPCION:
             flash(f'La descripción no puede tener más de {MAX_LENGTH_DESCRIPCION} caracteres.', 'danger')
             return render_template('actividad_form.html', accion='Crear', actividad=request.form)
@@ -77,7 +79,7 @@ def nueva_actividad():
         conn = get_connection()
         cur = conn.cursor()
 
-        # Validar nombre duplicado
+        # Verificar nombre exacto duplicado (sin distinguir mayúsculas)
         cur.execute("""
             SELECT COUNT(*) FROM actividades_economicas
             WHERE UPPER(nombre) = :nombre
@@ -98,14 +100,13 @@ def nueva_actividad():
             return redirect(url_for('actividades_economicas_view.listado'))
         except Exception as e:
             conn.rollback()
-            # Manejo específico de errores Oracle comunes
             error_str = str(e).upper()
             if "ORA-12899" in error_str:
-                flash(f'Error: Alguno de los campos excede la longitud máxima permitida.', 'danger')
+                flash('Error: Alguno de los campos excede la longitud máxima permitida.', 'danger')
             elif "ORA-01400" in error_str:
-                flash(f'Error: No se permiten campos vacíos.', 'danger')
+                flash('Error: No se permiten campos vacíos.', 'danger')
             else:
-                flash(f'Ocurrió un error inesperado al crear la actividad.', 'danger')
+                flash(f'Ocurrió un error inesperado al crear la actividad: {e}', 'danger')
             return render_template('actividad_form.html', accion='Crear', actividad=request.form)
         finally:
             cur.close()
@@ -113,7 +114,7 @@ def nueva_actividad():
 
     return render_template('actividad_form.html', accion='Crear', actividad={})
 
-# Editar actividad (endpoint: editar_actividad)
+# Editar actividad existente
 @actividades_economicas_view.route('/editar/<int:id>', methods=['GET', 'POST'])
 def editar_actividad(id):
     conn = get_connection()
@@ -127,6 +128,7 @@ def editar_actividad(id):
         if not nombre:
             flash('El nombre es obligatorio.', 'danger')
             return render_template('actividad_form.html', accion='Editar', actividad=request.form)
+
         if len(nombre) > MAX_LENGTH_NOMBRE:
             flash(f'El nombre no puede tener más de {MAX_LENGTH_NOMBRE} caracteres.', 'danger')
             return render_template('actividad_form.html', accion='Editar', actividad=request.form)
@@ -134,11 +136,12 @@ def editar_actividad(id):
         if not descripcion:
             flash('La descripción es obligatoria.', 'danger')
             return render_template('actividad_form.html', accion='Editar', actividad=request.form)
+
         if len(descripcion) > MAX_LENGTH_DESCRIPCION:
             flash(f'La descripción no puede tener más de {MAX_LENGTH_DESCRIPCION} caracteres.', 'danger')
             return render_template('actividad_form.html', accion='Editar', actividad=request.form)
 
-        # Validar nombre duplicado
+        # Validar nombre duplicado (excluyendo el mismo ID)
         cur.execute("""
             SELECT COUNT(*) FROM actividades_economicas
             WHERE UPPER(nombre) = :nombre AND id_actividad != :id
@@ -160,17 +163,17 @@ def editar_actividad(id):
             conn.rollback()
             error_str = str(e).upper()
             if "ORA-12899" in error_str:
-                flash(f'Error: Alguno de los campos excede la longitud máxima permitida.', 'danger')
+                flash('Error: Alguno de los campos excede la longitud máxima permitida.', 'danger')
             elif "ORA-01400" in error_str:
-                flash(f'Error: No se permiten campos vacíos.', 'danger')
+                flash('Error: No se permiten campos vacíos.', 'danger')
             else:
-                flash(f'Ocurrió un error inesperado al editar la actividad.', 'danger')
+                flash(f'Ocurrió un error inesperado al editar la actividad: {e}', 'danger')
             return render_template('actividad_form.html', accion='Editar', actividad=request.form)
         finally:
             cur.close()
             conn.close()
 
-    # GET: obtener actividad para mostrar en formulario
+    # GET: mostrar datos actuales
     cur.execute("""
         SELECT nombre, descripcion
         FROM actividades_economicas
@@ -187,7 +190,7 @@ def editar_actividad(id):
     actividad = {'nombre': row[0], 'descripcion': row[1]}
     return render_template('actividad_form.html', accion='Editar', actividad=actividad)
 
-# Eliminar actividad (endpoint: eliminar_actividad)
+# Eliminar actividad
 @actividades_economicas_view.route('/eliminar/<int:id>', methods=['GET'])
 def eliminar_actividad(id):
     conn = get_connection()

@@ -1,35 +1,37 @@
+<!-- templates/actividad_form.html -->
 {% extends 'layout.html' %}
 
-{% block title %}{{ accion }} Actividad Económica{% endblock %}
+{% block title %}
+  {{ accion }} Actividad Económica
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>{{ accion }} Actividad Económica</h2>
+<div class="container mt-5">
+  <h2 class="mb-4">{{ accion }} Actividad Económica</h2>
 
-  <form method="POST">
+  <form method="post">
     <div class="mb-3">
-      <label for="nombre" class="form-label">Nombre de la Actividad</label>
-      <input
-        type="text"
-        class="form-control"
-        id="nombre"
-        name="nombre"
-        value="{{ actividad.nombre if actividad else '' }}"
-        required>
+      <label for="nombre" class="form-label">Nombre</label>
+      <input type="text" name="nombre" class="form-control" value="{{ actividad.get('nombre', '') }}">
     </div>
 
     <div class="mb-3">
       <label for="descripcion" class="form-label">Descripción</label>
-      <textarea
-        class="form-control"
-        id="descripcion"
-        name="descripcion"
-        rows="3">{{ actividad.descripcion if actividad else '' }}</textarea>
+      <textarea name="descripcion" class="form-control" rows="4">{{ actividad.get('descripcion', '') }}</textarea>
     </div>
 
-    <button type="submit" class="btn btn-success">{{ accion }}</button>
-    <a href="{{ url_for('actividades_economicas_view.listado') }}"
-       class="btn btn-secondary">Cancelar</a>
+    <div class="d-flex gap-3">
+      <button type="submit" class="btn btn-success">
+        {% if accion == 'Editar' %}
+          <i class="bi bi-pencil-square"></i> Actualizar
+        {% else %}
+          <i class="bi bi-plus-circle"></i> Crear
+        {% endif %}
+      </button>
+      <a href="{{ url_for('actividades_economicas_view.listado') }}" class="btn btn-secondary">
+        Cancelar
+      </a>
+    </div>
   </form>
 </div>
 {% endblock %}
