@@ -1,83 +1,90 @@
+<!-- templates/representante_form.html -->
 {% extends 'layout.html' %}
 
+{% block title %}
+  {{ accion }} Representante Legal
+{% endblock %}
+
 {% block content %}
-<h2>{{ 'Editar Representante' if representante else 'Nuevo Representante' }}</h2>
+<div class="container mt-5">
+  <h2 class="mb-4">{{ accion }} Representante Legal</h2>
 
-{# Mostrar mensajes flash #}
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <div>
-      {% for category, message in messages %}
-        <div class="alert alert-{{ 'danger' if category == 'danger' or category == 'warning' else category }}" role="alert">
-          {{ message }}
-        </div>
-      {% endfor %}
+  <form method="post">
+    <div class="mb-3">
+      <label for="id_moral" class="form-label">Persona Moral</label>
+      <select name="id_moral" class="form-select">
+        <option value="">-- Selecciona --</option>
+        {% for pm in personas_morales %}
+          <option value="{{ pm.id }}"
+            {% if representante.get('id_moral')|string == pm.id|string %}selected{% endif %}>
+            {{ pm.razon_social }}
+          </option>
+        {% endfor %}
+      </select>
     </div>
-  {% endif %}
-{% endwith %}
 
-<form method="POST"
-      action="{% if representante and representante.get('id_representante') %}{{ url_for('representantes_legales_view.editar_representante', id=representante['id_representante']) }}{% else %}{{ url_for('representantes_legales_view.nuevo_representante') }}{% endif %}">
+    <div class="mb-3">
+      <label for="nombre" class="form-label">Nombre</label>
+      <input type="text" name="nombre" class="form-control" value="{{ representante.get('nombre', '') }}">
+    </div>
 
-    {% if representante and representante.get('id_representante') %}
-    <input type="hidden" name="id_representante" value="{{ representante['id_representante'] }}">
+    <div class="mb-3">
+      <label for="apellido_paterno" class="form-label">Apellido Paterno</label>
+      <input type="text" name="apellido_paterno" class="form-control" value="{{ representante.get('apellido_paterno', '') }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="apellido_materno" class="form-label">Apellido Materno</label>
+      <input type="text" name="apellido_materno" class="form-control" value="{{ representante.get('apellido_materno', '') }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="curp" class="form-label">CURP</label>
+      <input type="text" name="curp" class="form-control" value="{{ representante.get('curp', '') }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="rfc" class="form-label">RFC</label>
+      <input type="text" name="rfc" class="form-control" value="{{ representante.get('rfc', '') }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="telefono" class="form-label">Teléfono</label>
+      <input type="text" name="telefono" class="form-control" value="{{ representante.get('telefono', '') }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" name="email" class="form-control" value="{{ representante.get('email', '') }}">
+    </div>
+
+    <div class="mb-3">
+      <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+      <input type="date" name="fecha_nacimiento" class="form-control" value="{{ representante.get('fecha_nacimiento', '') }}">
+    </div>
+
+    {% if accion == 'Editar' %}
+      <div class="mb-3">
+        <label for="estado" class="form-label">Estado</label>
+        <select name="estado" class="form-select">
+          <option value="ACTIVO" {% if representante.get('estado') == 'ACTIVO' %}selected{% endif %}>Activo</option>
+          <option value="INACTIVO" {% if representante.get('estado') == 'INACTIVO' %}selected{% endif %}>Inactivo</option>
+        </select>
+      </div>
     {% endif %}
 
-    <div class="form-group">
-        <label for="id_moral">Persona Moral</label>
-        <select id="id_moral" name="id_moral" class="form-control" required>
-            <option value="">Seleccione...</option>
-            {% for moral in personas_morales %}
-            <option value="{{ moral.id }}" {% if representante and representante.get('id_moral') == moral.id %}selected{% endif %}>
-                {{ moral.razon_social }}
-            </option>
-            {% endfor %}
-        </select>
+    <div class="d-flex gap-3">
+      <button type="submit" class="btn btn-success">
+        {% if accion == 'Editar' %}
+          <i class="bi bi-pencil-square"></i> Actualizar
+        {% else %}
+          <i class="bi bi-plus-circle"></i> Crear
+        {% endif %}
+      </button>
+      <a href="{{ url_for('representantes_legales_view.listar_representantes') }}" class="btn btn-secondary">
+        Cancelar
+      </a>
     </div>
-
-    <div class="form-group">
-        <label for="nombre">Nombre(s)</label>
-        <input type="text" id="nombre" name="nombre" class="form-control" required value="{{ representante['nombre'] if representante else '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="apellido_paterno">Apellido Paterno</label>
-        <input type="text" id="apellido_paterno" name="apellido_paterno" class="form-control" value="{{ representante['apellido_paterno'] if representante else '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="apellido_materno">Apellido Materno</label>
-        <input type="text" id="apellido_materno" name="apellido_materno" class="form-control" value="{{ representante['apellido_materno'] if representante else '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="curp">CURP</label>
-        <input type="text" id="curp" name="curp" class="form-control" value="{{ representante['curp'] if representante else '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="rfc">RFC</label>
-        <input type="text" id="rfc" name="rfc" class="form-control" value="{{ representante['rfc'] if representante else '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="telefono">Teléfono</label>
-        <input type="text" id="telefono" name="telefono" class="form-control" value="{{ representante['telefono'] if representante else '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" name="email" class="form-control" value="{{ representante['email'] if representante else '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="fecha_nacimiento">Fecha de nacimiento</label>
-        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" value="{{ representante['fecha_nacimiento'] if representante else '' }}">
-    </div>
-
-    <!-- Aquí ELIMINAMOS el campo Estado -->
-
-    <button type="submit" class="btn btn-primary">{{ 'Actualizar' if representante else 'Guardar' }}</button>
-    <a href="{{ url_for('representantes_legales_view.listar_representantes') }}" class="btn btn-secondary">Cancelar</a>
-</form>
+  </form>
+</div>
 {% endblock %}

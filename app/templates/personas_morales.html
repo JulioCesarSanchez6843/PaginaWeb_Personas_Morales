@@ -87,7 +87,7 @@
             {% if p.estado == 'ACTIVO' %}
               <a href="{{ url_for('personas_morales_view.eliminar_persona', id=p.id_moral) }}"
                  class="btn btn-sm btn-danger"
-                 onclick="return confirm('¿Eliminar esta persona moral?');">
+                 onclick="return confirm('¿Desactivar esta persona moral?');">
                 Desactivar
               </a>
             {% else %}
