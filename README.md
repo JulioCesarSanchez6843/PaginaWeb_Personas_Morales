@@ -1,10 +1,10 @@
-# Sistema de Gestión de Personas Morales
+# Sistema de Gestión de Personas Morales.
 
 Este proyecto es una aplicación web desarrollada con **Python (Flask)** y **Oracle Database 23c Free** para gestionar personas morales, sus representantes legales y actividades económicas relacionadas.
 
 ---
 
-## 🚀 Características principales
+## Características principales.
 
 - Gestión CRUD de personas morales.
 - Administración de representantes legales.
@@ -14,9 +14,9 @@ Este proyecto es una aplicación web desarrollada con **Python (Flask)** y **Ora
 
 ---
 
-## ⚙️ Tecnologías utilizadas
+## Tecnologías utilizadas.
 
-- Python 3.x
+- Python 3.10
 - Flask
 - Oracle Database 23c Free (OCI o local)
 - SQLAlchemy (ORM)
